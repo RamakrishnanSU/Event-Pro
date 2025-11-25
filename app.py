@@ -15,7 +15,7 @@ def local_css():
         /* 1. GLOBAL TEXT COLOR FIX */
         html, body, [class*="css"], .stMarkdown, p, h1, h2, h3, h4, span, div {
             font-family: 'Inter', sans-serif;
-            color: #FFFFFF !important; /* Force White Everywhere */
+            color: #FFFFFF !important;
         }
         
         /* 2. FORCE DARK BACKGROUND */
@@ -68,7 +68,7 @@ def local_css():
         /* --- DATE BADGE --- */
         .date-badge {
             background-color: #2D2F3E;
-            color: #6C63FF !important; /* Keep badge purple */
+            color: #6C63FF !important;
             padding: 12px;
             border-radius: 12px;
             text-align: center;
@@ -94,6 +94,19 @@ def local_css():
             color: white !important;
             border-radius: 8px;
             border: 1px solid #4F4F4F;
+        }
+
+        /* --- FIX POPUPS & DROPDOWNS (THE FIX) --- */
+        div[data-baseweb="popover"], div[data-baseweb="menu"], div[role="listbox"] {
+            background-color: #1A1C24 !important;
+            border: 1px solid #2E303E !important;
+        }
+        li[role="option"] {
+            color: white !important;
+            background-color: #1A1C24 !important;
+        }
+        li[role="option"]:hover {
+            background-color: #6C63FF !important;
         }
         
         footer {visibility: hidden;}
@@ -375,3 +388,4 @@ elif menu == "Task Manager":
                                 st.rerun()
             else:
                 st.info("No active tasks.")
+
