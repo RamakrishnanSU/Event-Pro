@@ -18,9 +18,14 @@ def local_css():
             color: #E0E0E0;
         }
         
-        /* --- FORCE DARK BACKGROUND (The Fix) --- */
+        /* --- 1. FORCE DARK BACKGROUND --- */
         .stApp {
             background-color: #0E1117;
+        }
+        
+        /* --- 2. HIDE/COLOR THE TOP HEADER (The Fix) --- */
+        header[data-testid="stHeader"] {
+            background-color: #0E1117; /* Matches your background */
         }
 
         /* --- SIDEBAR STYLING --- */
@@ -32,8 +37,7 @@ def local_css():
             color: #FFFFFF !important;
         }
 
-        /* --- REST OF YOUR CSS (Keep this exactly the same) --- */
-        /* ... (Card Styling, Metrics, Buttons, etc.) ... */
+        /* --- REST OF YOUR CSS (Same as before) --- */
         div[data-testid="stVerticalBlockBorderWrapper"] > div {
             background-color: #1A1C24;
             border-radius: 16px;
@@ -367,4 +371,5 @@ elif menu == "Task Manager":
                                 logic.update_task_status(selected_id, t['task_name'], "Completed")
                                 st.rerun()
             else:
+
                 st.info("No active tasks.")
