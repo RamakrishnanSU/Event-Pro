@@ -6,8 +6,7 @@ import time
 # --- PAGE CONFIG ---
 st.set_page_config(page_title="Event Pro", page_icon="📅", layout="wide")
 
-# --- CUSTOM CSS ---
-
+# --- CUSTOM CSS (Dark Mode & White Text Fix) ---
 def local_css():
     st.markdown("""
         <style>
@@ -101,6 +100,9 @@ def local_css():
         </style>
         """, unsafe_allow_html=True)
 
+local_css()
+logic = EventLogic()
+
 # --- HELPER: UNIFIED HEADER FUNCTION ---
 def page_header(title, subtitle):
     """Displays the consistent Event Pro header on every page"""
@@ -139,7 +141,6 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
 # --- HELPER: RENDER CARD ---
-
 def render_event_card(event, unique_idx):
     date_obj = pd.to_datetime(event['date'])
     day = date_obj.day
@@ -157,10 +158,10 @@ def render_event_card(event, unique_idx):
             """, unsafe_allow_html=True)
             
         with col_info:
-            # 1. Force Title to White
+            # Force Title to White
             st.markdown(f"<h3 style='color: white; margin: 0 0 5px 0;'>{event['name']}</h3>", unsafe_allow_html=True)
             
-            # 2. Force Details to White (Changed from #A0A0A0)
+            # Force Details to White
             st.markdown(f"""
                 <div style='color: white; font-size: 14px;'>
                     📅 {date_obj.year} &nbsp; | &nbsp; ⏰ {event['time']} <br>
@@ -183,7 +184,6 @@ if menu == "Dashboard":
         col_header, col_add = st.columns([6, 1.5])
         
         with col_header:
-            # 1. NEW HEADER
             page_header("Dashboard", "All Events")
         
         with col_add:
@@ -207,8 +207,8 @@ if menu == "Dashboard":
                         st.session_state['show_create'] = False
                         st.rerun()
 
-         events_df = logic.get_events()
-         if not events_df.empty:
+        events_df = logic.get_events()
+        if not events_df.empty:
             events_df['date'] = pd.to_datetime(events_df['date'])
             events_df = events_df.sort_values(by='date')
             for idx, (_, event) in enumerate(events_df.iterrows()):
@@ -219,42 +219,49 @@ if menu == "Dashboard":
     else:
         # === DETAIL VIEW ===
         events_df = logic.get_events()
-        event = events_df[events_df['id'] == st.session_state['view_event_id']].iloc[0]
+        # Find the specific event
+        event_row = events_df[events_df['id'] == st.session_state['view_event_id']]
         
-        # 1. NEW HEADER
-        page_header("Dashboard", event['name'])
-        
-        if st.button("← Back to Dashboard"):
-            st.session_state['view_event_id'] = None
-            st.rerun()
-        
-        with st.container(border=True):
-            c1, c2, c3 = st.columns(3)
-            c1.markdown(f"**📅 Date:** {event['date']}")
-            c2.markdown(f"**⏰ Time:** {event['time']}")
-            c3.markdown(f"**📍 Location:** {event['location']}")
-            st.divider()
-            st.markdown(f"**📝 Description:**\n{event['description']}")
+        if not event_row.empty:
+            event = event_row.iloc[0]
             
-        tab_attendees, tab_tasks = st.tabs(["👥 Guest List", "✅ Tasks"])
-        
-        with tab_attendees:
-            attendees = logic.get_attendees(event['id'])
-            if not attendees.empty:
-                st.dataframe(attendees[['name', 'email', 'rsvp', 'role']], use_container_width=True, hide_index=True)
-            else:
-                st.info("No guests registered yet.")
+            page_header("Dashboard", event['name'])
+            
+            if st.button("← Back to Dashboard"):
+                st.session_state['view_event_id'] = None
+                st.rerun()
+            
+            with st.container(border=True):
+                c1, c2, c3 = st.columns(3)
+                c1.markdown(f"**📅 Date:** {event['date']}")
+                c2.markdown(f"**⏰ Time:** {event['time']}")
+                c3.markdown(f"**📍 Location:** {event['location']}")
+                st.divider()
+                st.markdown(f"**📝 Description:**\n{event['description']}")
                 
-        with tab_tasks:
-            tasks = logic.get_tasks(event['id'])
-            if not tasks.empty:
-                st.dataframe(tasks[['task_name', 'status', 'priority', 'deadline']], use_container_width=True, hide_index=True)
-            else:
-                st.info("No tasks assigned.")
+            tab_attendees, tab_tasks = st.tabs(["👥 Guest List", "✅ Tasks"])
+            
+            with tab_attendees:
+                attendees = logic.get_attendees(event['id'])
+                if not attendees.empty:
+                    st.dataframe(attendees[['name', 'email', 'rsvp', 'role']], use_container_width=True, hide_index=True)
+                else:
+                    st.info("No guests registered yet.")
+                    
+            with tab_tasks:
+                tasks = logic.get_tasks(event['id'])
+                if not tasks.empty:
+                    st.dataframe(tasks[['task_name', 'status', 'priority', 'deadline']], use_container_width=True, hide_index=True)
+                else:
+                    st.info("No tasks assigned.")
+        else:
+            st.error("Event not found.")
+            if st.button("Go Back"):
+                st.session_state['view_event_id'] = None
+                st.rerun()
 
 # --- PAGE 2: ANALYTICS ---
 elif menu == "Analytics":
-    # 1. NEW HEADER
     page_header("Analytics", "Insights & Reports")
     
     events_df = logic.get_events()
@@ -302,7 +309,6 @@ elif menu == "Analytics":
 
 # --- PAGE 3: ATTENDEES ---
 elif menu == "Attendees":
-    # 1. NEW HEADER
     page_header("Attendees", "Guest Management")
     
     events_df = logic.get_events()
@@ -334,7 +340,6 @@ elif menu == "Attendees":
 
 # --- PAGE 4: TASK MANAGER ---
 elif menu == "Task Manager":
-    # 1. NEW HEADER
     page_header("Tasks", "Project Tracking")
     
     events_df = logic.get_events()
@@ -369,7 +374,4 @@ elif menu == "Task Manager":
                                 logic.update_task_status(selected_id, t['task_name'], "Completed")
                                 st.rerun()
             else:
-
                 st.info("No active tasks.")
-
-
