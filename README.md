@@ -1,8 +1,8 @@
-# Event Planner
+# Event Pro
 
 ## Project Description
 
-Event Planner is a web-based tool that helps users organize and manage events such as parties, conferences, or workshops. It allows users to input event details, manage attendees, assign tasks, visualize progress, and analyze event data to improve planning efficiency.
+Event Pro is a web-based tool that helps users organize and manage events such as parties, conferences, or workshops. It allows users to input event details, manage attendees, assign tasks, visualize progress, and analyze event data to improve planning efficiency.
 
 ## Features
 
@@ -28,11 +28,7 @@ Event Planner is a web-based tool that helps users organize and manage events su
 - Pandas / Plotly / Seaborn for data visualization
 - GitHub for version control
 
-## Team Members
 
-- Member 1: Lan Yang
-- Member 2: Nihui Shao
-- Member 3: Ramakrishnan Subramanian Usha
 
 ## Getting Started
 
@@ -43,3 +39,4 @@ Event Planner is a web-based tool that helps users organize and manage events su
 ## License
 
 MIT License
+
