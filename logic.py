@@ -5,11 +5,12 @@ from data_handler import DataHandler
 class EventLogic:
     def __init__(self):
         self.handler = DataHandler()
-        # These must match the TAB NAMES in your Google Sheet exactly
+        # Ensure these match your Google Sheet tab names exactly
         self.sheet_events = "events"
         self.sheet_tasks = "tasks"
         self.sheet_attendees = "attendees"
 
+    # ================= EVENTS =================
     def get_events(self):
         df = self.handler.load_data(self.sheet_events)
         required_cols = ['id', 'name', 'date', 'time', 'location', 'description']
@@ -22,7 +23,7 @@ class EventLogic:
             if col not in df.columns:
                 df[col] = ""
         
-        # Ensure ID is integer
+        # CLEANUP: Force ID to be an integer (removes 1.0 issue)
         if 'id' in df.columns:
              df['id'] = pd.to_numeric(df['id'], errors='coerce').fillna(0).astype(int)
              
@@ -45,17 +46,28 @@ class EventLogic:
         events.append(new_event)
         return self.handler.save_data(events, self.sheet_events)
 
+    # ================= ATTENDEES (Fixed) =================
     def get_attendees(self, event_id=None):
         df = self.handler.load_data(self.sheet_attendees)
         cols = ['event_id', 'name', 'email', 'rsvp', 'role', 'dietary']
+        
+        # Return empty if no data
         if df.empty: return pd.DataFrame(columns=cols)
         
+        # CLEANUP: Ensure event_id column exists and is clean
+        if 'event_id' not in df.columns:
+            return pd.DataFrame(columns=cols)
+            
+        # Force event_id to simple integer (Handles 1.0 vs 1)
+        df['event_id'] = pd.to_numeric(df['event_id'], errors='coerce').fillna(0).astype(int)
+        
         if event_id:
-            # Filter by event ID
-            return df[df['event_id'].astype(str) == str(event_id)]
+            # Filter comparing Integers to Integers
+            return df[df['event_id'] == int(event_id)]
         return df
 
     def add_attendee(self, event_id, name, email, rsvp, role, dietary):
+        # Load existing data first so we append, not overwrite
         df = self.handler.load_data(self.sheet_attendees)
         attendees = df.to_dict('records') if not df.empty else []
         
@@ -70,13 +82,21 @@ class EventLogic:
         attendees.append(new_att)
         return self.handler.save_data(attendees, self.sheet_attendees)
 
+    # ================= TASKS (Fixed) =================
     def get_tasks(self, event_id=None):
         df = self.handler.load_data(self.sheet_tasks)
         cols = ['event_id', 'task_name', 'status', 'deadline', 'priority']
+        
         if df.empty: return pd.DataFrame(columns=cols)
+
+        if 'event_id' not in df.columns:
+            return pd.DataFrame(columns=cols)
+
+        # Force event_id to simple integer
+        df['event_id'] = pd.to_numeric(df['event_id'], errors='coerce').fillna(0).astype(int)
         
         if event_id:
-            return df[df['event_id'].astype(str) == str(event_id)]
+            return df[df['event_id'] == int(event_id)]
         return df
 
     def add_task(self, event_id, task_name, status, deadline, priority="Medium"):
@@ -97,9 +117,13 @@ class EventLogic:
         df = self.handler.load_data(self.sheet_tasks)
         if df.empty: return "No tasks found."
         
+        # Ensure IDs are clean for comparison
+        if 'event_id' in df.columns:
+            df['event_id'] = pd.to_numeric(df['event_id'], errors='coerce').fillna(0).astype(int)
+        
         updated = False
         for index, row in df.iterrows():
-            if str(row['event_id']) == str(event_id) and row['task_name'] == task_name:
+            if row['event_id'] == int(event_id) and row['task_name'] == task_name:
                 df.at[index, 'status'] = new_status
                 updated = True
         
@@ -107,6 +131,7 @@ class EventLogic:
             return self.handler.save_data(df, self.sheet_tasks)
         return "Task not found."
 
+    # ================= ANALYTICS =================
     def get_rsvp_pie_chart(self, event_id):
         attendees = self.get_attendees(event_id)
         if attendees.empty: return None
@@ -116,7 +141,7 @@ class EventLogic:
         fig.patch.set_alpha(0.0) 
         ax.patch.set_alpha(0.0)
         
-        rsvp_counts.plot(kind='pie', autopct='%1.1f%%', ax=ax, textprops={'color':"white"})
+        wedges, texts, autotexts = rsvp_counts.plot(kind='pie', autopct='%1.1f%%', ax=ax, textprops={'color':"white"})
         ax.set_ylabel('')
         return fig
 
