@@ -24,16 +24,21 @@ class DataHandler:
         except Exception as e:
             return f"Error saving: {e}"
 
-    # --- NEW FUNCTION: DELETE ROW ---
     def delete_data(self, worksheet_name, column_name, value_to_delete):
         """Removes rows where column_name matches value_to_delete"""
         try:
             df = self.load_data(worksheet_name)
             if df.empty: return "Sheet is empty"
             
-            # Filter out the row to delete
-            # We convert to string to ensure safe comparison
-            df = df[df[column_name].astype(str) != str(value_to_delete)]
+            # 1. Normalize the column to standard Integers (removes .0 issues)
+            # Coerce errors turns bad data into NaN, then we fill with 0, then make int, then string
+            df[column_name] = pd.to_numeric(df[column_name], errors='coerce').fillna(0).astype(int).astype(str)
+            
+            # 2. Normalize the value to delete
+            val_str = str(int(value_to_delete))
+            
+            # 3. Filter
+            df = df[df[column_name] != val_str]
             
             self.conn.update(worksheet=worksheet_name, data=df)
             return "Deleted"
