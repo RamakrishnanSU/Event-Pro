@@ -39,4 +39,6 @@ Event Pro is a web-based tool that helps users organize and manage events such a
 ## License
 
 MIT License
+Link
+https://event-pro-bpfnslhfkh2fmw4gfnc7s3.streamlit.app/
 
